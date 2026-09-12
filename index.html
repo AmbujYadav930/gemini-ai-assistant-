@@ -7,30 +7,50 @@
     .box { width: 90%; max-width: 600px; margin-top: 50px; }
     input { width: 75%; padding: 12px; border-radius: 8px; border: none; }
     button { padding: 12px 20px; border-radius: 8px; border: none; background: #00ff88; cursor: pointer; font-weight: bold; }
-    #answer { margin-top: 20px; background: #222; padding: 15px; border-radius: 10px; min-height: 100px; white-space: pre-wrap; }
+    button:disabled { background: #555; cursor: not-allowed; }
+    #answer { margin-top: 20px; background: #222; padding: 15px; border-radius: 10px; min-height: 100px; white-space: pre-wrap; line-height: 1.5; }
   </style>
 </head>
 <body>
   <div class="box">
     <h2>🤖 Apna AI Assistant</h2>
     <input id="q" placeholder="Kuch bhi pucho, jaise - MERN kya hai?" />
-    <button onclick="ask()">Send</button>
+    <button id="btn" onclick="ask()">Send</button>
     <div id="answer">Yahan jawab ayega...</div>
   </div>
 
   <script>
+    const qInput = document.getElementById('q');
+    const btn = document.getElementById('btn');
+    
+    // Enter se bhi bhej sake
+    qInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') ask();
+    });
+
     async function ask() {
-      const question = document.getElementById('q').value;
+      const question = qInput.value.trim();
       const ansDiv = document.getElementById('answer');
       if(!question) return;
-      ansDiv.innerText = "Soch raha hai...";
-      const res = await fetch('/api/ask', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ question })
-      });
-      const data = await res.json();
-      ansDiv.innerText = data.answer;
+      
+      ansDiv.innerText = "Soch raha hai... 🤔";
+      btn.disabled = true;
+      qInput.value = ""; // <-- Ab auto clear hoga
+
+      try {
+        const res = await fetch('/api/ask', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ question })
+        });
+        const data = await res.json();
+        ansDiv.innerText = data.answer;
+      } catch (err) {
+        ansDiv.innerText = "Error: " + err.message;
+      } finally {
+        btn.disabled = false;
+        qInput.focus();
+      }
     }
   </script>
 </body>
