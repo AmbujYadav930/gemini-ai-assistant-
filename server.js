@@ -34,10 +34,26 @@ app.get('/', (req, res) => {
 app.post('/api/ask', async (req, res) => {
   try {
     const { question } = req.body;
+    if (!question) return res.json({ answer: "Sawal likho bhai!" });
+    
     const result = await chain.invoke({ question });
-    res.json({ answer: result.content });
+    
+    // Yeh line sabse important hai - undefined fix
+    let finalAnswer = "";
+    if (typeof result === 'string') {
+      finalAnswer = result;
+    } else if (typeof result.content === 'string') {
+      finalAnswer = result.content;
+    } else if (Array.isArray(result.content)) {
+      finalAnswer = result.content.map(c => c.text || c).join("");
+    } else {
+      finalAnswer = result.content || result.text || JSON.stringify(result);
+    }
+
+    res.json({ answer: finalAnswer });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    console.error(e);
+    res.status(500).json({ answer: "Error: " + e.message });
   }
 });
 
