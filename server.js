@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 const model = new ChatGoogleGenerativeAI({
-  model: "gemini-1.5-flash",
+  model: "gemini-3.6-flash",
   apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY,
 });
 
